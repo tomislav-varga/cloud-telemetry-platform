@@ -1,3 +1,4 @@
 .notes/
 .venv/
 __pycache__/
+.env
