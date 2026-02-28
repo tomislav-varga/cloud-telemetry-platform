@@ -2,8 +2,8 @@
 
 from __future__ import annotations
 
-from edge.domain.models import SensorReading
-from edge.domain.ports import DataTransmitter
+from domain.models import SensorReading
+from domain.ports import DataTransmitter
 
 
 class TransmissionService:

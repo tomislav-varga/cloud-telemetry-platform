@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from edge.domain.models import SensorReading
-from edge.domain.ports import SensorReader
-from edge.domain.validators import validate_sensor_data
+from domain.models import SensorReading
+from domain.ports import SensorReader
+from domain.validators import validate_sensor_data
 
 
 class SensorService:
