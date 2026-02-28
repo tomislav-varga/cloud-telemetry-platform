@@ -4,10 +4,10 @@ from datetime import UTC, datetime
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db import get_db
-from app.metrics import INGESTED_RECORD_COUNT
-from app.repositories.telemetry import DuplicateTelemetryError, TelemetryRepository
-from app.schemas.telemetry import TelemetryCreate, TelemetryResponse
+from backend.db import get_db
+from backend.metrics import INGESTED_RECORD_COUNT
+from backend.repositories.telemetry import DuplicateTelemetryError, TelemetryRepository
+from backend.schemas.telemetry import TelemetryCreate, TelemetryResponse
 
 router = APIRouter(prefix="/telemetry", tags=["telemetry"])
 logger = logging.getLogger(__name__)

@@ -5,9 +5,9 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from app.config import get_settings
-from app.db import Base
-from app.models import device, telemetry  # noqa: F401
+from backend.config import get_settings
+from backend.db import Base
+from backend.models import device, telemetry  # noqa: F401
 
 config = context.config
 

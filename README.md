@@ -121,7 +121,7 @@ alembic upgrade head
 ## 5) Start the API server
 
 ```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
 API base URL: `http://localhost:8000`

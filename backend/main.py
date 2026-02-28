@@ -7,12 +7,12 @@ from fastapi.responses import JSONResponse, Response
 from prometheus_client import CONTENT_TYPE_LATEST, Gauge, generate_latest
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.telemetry import router as telemetry_router
-from app.config import get_settings
-from app.db import check_db_health, get_db
-from app.metrics import ERROR_COUNT, REQUEST_COUNT
-from app.repositories.telemetry import TelemetryRepository
-from app.logging import configure_logging
+from backend.api.telemetry import router as telemetry_router
+from backend.config import get_settings
+from backend.db import check_db_health, get_db
+from backend.metrics import ERROR_COUNT, REQUEST_COUNT
+from backend.repositories.telemetry import TelemetryRepository
+from backend.logging_config import configure_logging
 
 settings = get_settings()
 configure_logging(settings.log_level)

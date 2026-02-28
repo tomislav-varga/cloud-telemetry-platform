@@ -4,8 +4,8 @@ from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.telemetry import Telemetry
-from app.schemas.telemetry import TelemetryCreate
+from backend.models.telemetry import Telemetry
+from backend.schemas.telemetry import TelemetryCreate
 
 
 class DuplicateTelemetryError(Exception):

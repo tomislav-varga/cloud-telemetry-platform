@@ -5,7 +5,7 @@ from sqlalchemy import DateTime, Float, Index, String, UniqueConstraint, func, t
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column
 
-from app.db import Base
+from backend.db import Base
 
 
 class Telemetry(Base):
