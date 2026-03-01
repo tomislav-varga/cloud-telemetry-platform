@@ -1,7 +1,7 @@
-📘 Copilot Instructions — Telemetry API (FastAPI + PostgreSQL)
+📘 Copilot Instructions — API Authentication (Device API Key, FastAPI + PostgreSQL)
 🎯 Goal
 
-Implement a production-ready telemetry ingestion API using:
+Implement production-grade device authentication for the Telemetry API using:
 
 FastAPI
 
@@ -9,361 +9,333 @@ PostgreSQL
 
 SQLAlchemy 2.0 (async)
 
-Alembic for migrations
+Clean Architecture
 
-No authentication in v1, but architecture must support future auth.
+API Key per device (header-based)
 
-1️⃣ Functional Requirements
-Endpoint
+Secure key hashing
 
-POST /telemetry
+Dependency injection
 
-JSON Payload
-{
-  "device_id": "pi-lab-01",
-  "temperature": 22.4,
-  "humidity": 51.2,
-  "timestamp": "2026-02-14T12:00:00Z"
-}
-Behavior
+Scalable & gateway-ready design
 
-Validate payload using Pydantic
+Authentication must be:
 
-Store data in PostgreSQL
+Stateless
 
-Generate UUID for id
+Horizontally scalable
 
-Set created_at automatically (UTC)
+Secure by default
 
-Return 201 Created
+Rotatable
 
-Return stored object
+Compatible with future API Gateway (e.g., Tyk)
 
-2️⃣ Architecture Rules (Very Important)
+🏗 Architectural Principles (Mandatory)
 
-Copilot must follow these architectural principles:
+Copilot must follow:
 
 ✅ Separation of Concerns
+✅ Dependency Injection
+✅ No authentication logic inside route handlers
+✅ No direct DB access in API layer
+✅ No plaintext API key storage
+✅ No global DB sessions
+✅ Async everywhere
+✅ Small, testable functions
 
-Structure project like this:
+📂 Required Folder Structure Update
 
-app/
-├── main.py
-├── config.py
-├── db.py
-├── models/
-│   └── telemetry.py
-├── schemas/
-│   └── telemetry.py
+Add the following structure inside backend/:
+
+backend/
+├── security/
+│   ├── __init__.py
+│   ├── api_key.py
+│   ├── hashing.py
+│   └── dependencies.py
 ├── repositories/
-│   └── telemetry.py
-├── api/
-│   └── telemetry.py
+│   ├── device.py
 
-API layer → request/response handling
+Authentication logic must NOT be placed in:
 
-Schema layer → validation
+api/
 
-Model layer → database models
+models/
 
-Repository layer → DB interaction
+schemas/
 
-No SQL inside API routes
+Security concerns live in security/.
 
-3️⃣ Database Design
-PostgreSQL Table
+1️⃣ Device Authentication Strategy
+Authentication Type
 
-Table: telemetry
+Header-based API Key:
+
+X-API-Key: dev_abc123.<random_32_bytes>
+
+Structure:
+
+<key_prefix>.<secret>
+
+Example:
+
+dev_a1b2c3.ZXhhbXBsZVNlY3JldFN0cmluZw
+
+Why prefix?
+
+Enables indexed DB lookup
+
+Avoids scanning all devices
+
+Allows efficient key rotation
+
+Industry best practice (Stripe-style pattern)
+
+2️⃣ Database Requirements
+Update devices Table
 
 Columns:
 
 Column	Type	Constraints
 id	UUID	PK
-device_id	VARCHAR	NOT NULL
-temperature	FLOAT	NOT NULL
-humidity	FLOAT	NOT NULL
-timestamp	TIMESTAMP WITH TIME ZONE	NOT NULL
+device_id	VARCHAR	UNIQUE, NOT NULL
+key_prefix	VARCHAR	UNIQUE, NOT NULL
+api_key_hash	VARCHAR	NOT NULL
+is_active	BOOLEAN	DEFAULT true
+last_used_at	TIMESTAMP WITH TIME ZONE	NULL
 created_at	TIMESTAMP WITH TIME ZONE	DEFAULT now()
-Indexes
 
-Add:
+Add index:
 
-CREATE INDEX idx_telemetry_device_id ON telemetry(device_id);
-CREATE INDEX idx_telemetry_timestamp ON telemetry(timestamp);
-CREATE INDEX idx_telemetry_device_timestamp ON telemetry(device_id, timestamp DESC);
+CREATE UNIQUE INDEX idx_devices_key_prefix ON devices(key_prefix);
 
-Use Alembic migration for schema creation.
+Alembic migration required.
 
-4️⃣ Data Validation Rules
+3️⃣ Secure API Key Handling
+File: backend/security/hashing.py
 
-Using Pydantic:
+Requirements:
 
-device_id → min length 3
+Use bcrypt
 
-temperature → realistic range (-50 to 100 °C)
+Never store plaintext
 
-humidity → 0–100 %
+Use constant-time comparison
 
-timestamp → must be timezone-aware UTC
+Provide:
 
-Reject invalid values with 422.
+hash_api_key(raw_key: str) -> str
+verify_api_key(raw_key: str, hashed: str) -> bool
 
-5️⃣ FastAPI Endpoint Requirements
+Do NOT implement manual hashing logic.
 
-File: api/telemetry.py
+4️⃣ Device Repository Layer
 
-POST /telemetry
+Create:
 
-Async route
+backend/repositories/device.py
 
-Uses dependency injection for DB session
+Class:
 
-Calls repository layer
+class DeviceRepository:
+    async def get_by_key_prefix(session, prefix)
+    async def update_last_used(session, device)
 
-Returns response model
+Repository must:
 
-Response model must exclude internal DB state.
+Use AsyncSession
 
-6️⃣ Database Layer (Async)
+Never return None silently
+
+Never expose internal SQL
+
+Only query by key_prefix
+
+5️⃣ Authentication Dependency
+
+File:
+
+backend/security/api_key.py
 
 Use:
 
-asyncpg
+from fastapi.security import APIKeyHeader
 
-SQLAlchemy 2.0 async engine
+Create header extractor:
 
-AsyncSession
-
-Connection string from environment:
-
-DATABASE_URL=postgresql+asyncpg://user:pass@db:5432/telemetry
-
-Use connection pooling.
-
-7️⃣ Repository Pattern
-
-Create TelemetryRepository class with:
-
-async def create_telemetry(session, telemetry_data)
-async def get_latest_by_device(session, device_id)
-async def get_range(session, device_id, start, end)
-
-Never expose ORM models directly to API.
-
-8️⃣ Additional Features Worth Implementing
-
-These should be scaffolded even in v1.
-
-✅ 1. GET Endpoints
-
-Add:
-
-GET /telemetry/{device_id}/latest
-GET /telemetry/{device_id}?start=...&end=...
-
-Use indexed queries.
-
-✅ 2. Rate Limiting (Preparation)
-
-Even if not implemented fully, structure app to allow:
-
-SlowAPI or Redis-based limiter
-
-Device-based rate limiting
-
-Telemetry ingestion endpoints are common DDoS targets.
-
-✅ 3. Device Registry Table (Optional but Recommended)
-
-Future-ready design:
-
-Table: devices
-
-Column	Type
-id	UUID
-device_id	string unique
-created_at	timestamp
-
-This allows:
-
-Device validation
-
-Authentication per device
-
-API keys later
-
-✅ 4. Future Authentication Preparation
-
-Even though v1 has no auth:
-
-Structure routes like:
-
-async def create_telemetry(
-    telemetry: TelemetryCreate,
-    session: AsyncSession = Depends(get_db),
-    current_device: Device = Depends(optional_device_dependency)
+api_key_header = APIKeyHeader(
+    name="X-API-Key",
+    auto_error=False
 )
 
-Where:
+Create main dependency:
 
-optional_device_dependency currently returns None
+async def get_current_device(
+    api_key: str = Security(api_key_header),
+    session: AsyncSession = Depends(get_db)
+)
 
-Later replaced with API key validation
+Behavior:
 
-Do NOT hardcode authentication logic into route.
+If header missing → 401
 
-✅ 5. Logging
+Split key into prefix + secret
 
-Add structured logging:
+Fetch device by prefix
 
-Log device_id
+Verify hash
 
-Log ingestion success
+Check is_active
 
-Log validation errors
+Update last_used_at
 
-Use Python logging module, JSON format if possible.
+Return Device model
 
-✅ 6. Health Endpoint
+Errors:
 
-Add:
+Condition	Status
+Missing header	401
+Invalid format	401
+Unknown prefix	401
+Hash mismatch	401
+Inactive device	403
 
-GET /health
+Do NOT leak which part failed.
 
-Checks:
+Always return generic:
 
-DB connectivity
+"Invalid API Key"
+6️⃣ Route Integration (Clean)
 
-Returns status OK
+Update backend/api/telemetry.py
 
-✅ 7. Metrics Endpoint (Prometheus Ready)
+Replace:
 
-Add:
+current_device: Device = Depends(optional_device_dependency)
 
-GET /metrics
+With:
 
-Expose:
+current_device: Device = Depends(get_current_device)
 
-Total telemetry records
+Remove:
 
-Requests count
+device_id from payload trust
 
-Error count
+Instead:
 
-Use prometheus-client.
+Override telemetry.device_id with:
 
-✅ 8. Idempotency Protection (Advanced but Recommended)
+current_device.device_id
 
-Optional:
+Never trust client-provided device_id.
 
-Prevent duplicate inserts for same:
+This prevents spoofing.
 
-device_id + timestamp
+7️⃣ Telemetry Table Security Rule
 
-Add unique constraint:
+You must enforce:
 
 UNIQUE(device_id, timestamp)
 
-On conflict → ignore or update.
+This ensures:
 
-9️⃣ Performance Considerations
+Idempotency
 
-Use bulk insert capability if needed later
+No duplicate injection
 
-Partition table by time (future optimization)
+Strong integrity
 
-Avoid SELECT before INSERT
+8️⃣ Logging Requirements
 
-Use proper indexing
+Use structured logging (already scaffolded).
 
-🔟 Production Considerations
+Log:
 
-Use UTC everywhere
+device_id
 
-Never trust client timestamp blindly
+key_prefix
 
-Consider server-side timestamp override option
+authentication failures
 
-Use Docker
+successful authentication
 
-Add .env support
+disabled device attempts
 
-Add proper exception handlers
+Never log full API key.
 
-1️⃣1️⃣ Testing Requirements
+Only log prefix.
 
-Add:
+9️⃣ Rate Limiting Preparation
+
+Prepare system to allow future integration with:
+
+SlowAPI
+
+Redis-based rate limiter
+
+Design requirement:
+
+Rate limiting must be device-based.
+
+Future example:
+
+100 requests per minute per device
+
+Authentication dependency must run BEFORE rate limiting.
+
+🔟 API Key Generation Utility
+
+Create utility function (not endpoint yet):
+
+generate_api_key() -> tuple[prefix, raw_key, hashed]
+
+Implementation:
+
+prefix: "dev_" + 6 random alphanumeric chars
+
+secret: secrets.token_urlsafe(32)
+
+raw_key = f"{prefix}.{secret}"
+
+hash raw_key
+
+store prefix + hash
+
+Return raw_key only once.
+
+Never store secret.
+
+1️⃣1️⃣ Health & Metrics Impact
+
+Metrics endpoint must include:
+
+authentication_failures_total
+
+authenticated_requests_total
+
+Prometheus-ready counters.
+
+1️⃣2️⃣ Testing Requirements
+
+Add tests:
+
+valid key
+
+invalid key
+
+inactive device
+
+missing header
+
+malformed key
+
+spoofed device_id attempt
+
+telemetry insertion with auth
+
+Use:
 
 pytest
 
-httpx async client
-
-Test:
-
-valid payload
-
-invalid temperature
-
-missing field
-
-range query
-
-latest query
-
-1️⃣2️⃣ Example Pydantic Schemas
-class TelemetryBase(BaseModel):
-    device_id: str
-    temperature: float
-    humidity: float
-    timestamp: datetime
-
-class TelemetryCreate(TelemetryBase):
-    pass
-
-class TelemetryResponse(TelemetryBase):
-    id: UUID
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-1️⃣3️⃣ Expected Status Codes
-Scenario	Code
-Created	201
-Validation error	422
-Device not found (future)	404
-Duplicate telemetry	409 (optional)
-🧠 Engineering Principles
-
-Copilot must:
-
-Prefer clarity over magic
-
-Avoid global DB sessions
-
-Avoid blocking calls
-
-Use async everywhere
-
-Keep functions small
-
-Add type hints everywhere
-
-Follow clean architecture
-
-🚀 End Result
-
-You should end up with:
-
-Production-ready ingestion API
-
-Proper database schema
-
-Indexed queries
-
-Clean architecture
-
-Future-ready authentication
-
-Observability ready
-
-Testable structure
+httpx AsyncClient

@@ -11,6 +11,7 @@ class AppConfig:
     """Application configuration values."""
 
     API_URL: str
+    API_KEY: str
     DEVICE_ID: str
     READ_INTERVAL_SECONDS: int
     MAX_SENSOR_RETRIES: int
@@ -22,6 +23,7 @@ class AppConfig:
         """Load configuration from environment variables with defaults."""
         config = cls(
             API_URL=os.getenv("API_URL", "http://100.95.7.29:8000/telemetry"),
+            API_KEY=os.getenv("API_KEY", ""),
             DEVICE_ID=os.getenv("DEVICE_ID", "raspberrypi-edge-01"),
             READ_INTERVAL_SECONDS=int(os.getenv("READ_INTERVAL_SECONDS", "3")),
             MAX_SENSOR_RETRIES=int(os.getenv("MAX_SENSOR_RETRIES", "3")),
@@ -42,5 +44,7 @@ class AppConfig:
             raise ValueError("HTTP_TIMEOUT must be > 0")
         if not self.API_URL:
             raise ValueError("API_URL is required")
+        if not self.API_KEY:
+            raise ValueError("API_KEY is required")
         if not self.DEVICE_ID:
             raise ValueError("DEVICE_ID is required")

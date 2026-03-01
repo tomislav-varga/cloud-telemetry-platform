@@ -14,8 +14,16 @@ logger = logging.getLogger(__name__)
 class HTTPDataTransmitter:
     """Transmits sensor data to an HTTP endpoint with retry/backoff."""
 
-    def __init__(self, api_url: str, timeout_seconds: float = 5.0, max_retries: int = 3, backoff_base_seconds: float = 1.0) -> None:
+    def __init__(
+        self,
+        api_url: str,
+        api_key: str,
+        timeout_seconds: float = 5.0,
+        max_retries: int = 3,
+        backoff_base_seconds: float = 1.0,
+    ) -> None:
         self.api_url = api_url
+        self.api_key = api_key
         self.timeout_seconds = timeout_seconds
         self.max_retries = max_retries
         self.backoff_base_seconds = backoff_base_seconds
@@ -24,7 +32,7 @@ class HTTPDataTransmitter:
         return requests.post(
             self.api_url,
             data=payload,
-            headers={"Content-Type": "application/json"},
+            headers={"Content-Type": "application/json", "X-API-Key": self.api_key},
             timeout=self.timeout_seconds,
         )
 

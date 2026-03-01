@@ -23,6 +23,7 @@ def run() -> None:
     sensor_reader = DHT22Reader(max_retries=config.MAX_SENSOR_RETRIES)
     transmitter = HTTPDataTransmitter(
         api_url=config.API_URL,
+        api_key=config.API_KEY,
         timeout_seconds=config.HTTP_TIMEOUT,
         max_retries=config.MAX_HTTP_RETRIES,
     )

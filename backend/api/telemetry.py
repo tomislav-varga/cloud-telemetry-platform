@@ -6,16 +6,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.db import get_db
 from backend.metrics import INGESTED_RECORD_COUNT
+from backend.models.device import Device
 from backend.repositories.telemetry import DuplicateTelemetryError, TelemetryRepository
 from backend.schemas.telemetry import TelemetryCreate, TelemetryResponse
+from backend.security.api_key import get_current_device
 
 router = APIRouter(prefix="/telemetry", tags=["telemetry"])
 logger = logging.getLogger(__name__)
 repo = TelemetryRepository()
-
-
-async def optional_device_dependency() -> None:
-    return None
 
 
 def _validate_utc(value: datetime) -> datetime:
@@ -37,23 +35,25 @@ def _validate_utc(value: datetime) -> datetime:
 async def create_telemetry(
     telemetry: TelemetryCreate,
     session: AsyncSession = Depends(get_db),
-    current_device: None = Depends(optional_device_dependency),
+    current_device: Device = Depends(get_current_device),
 ) -> TelemetryResponse:
-    del current_device
+    telemetry_with_authenticated_device = telemetry.model_copy(
+        update={"device_id": current_device.device_id}
+    )
 
     try:
-        record = await repo.create_telemetry(session, telemetry)
+        record = await repo.create_telemetry(session, telemetry_with_authenticated_device)
     except DuplicateTelemetryError as exc:
         logger.warning(
             "telemetry_duplicate",
-            extra={"device_id": telemetry.device_id, "path": "/telemetry", "status_code": 409},
+            extra={"device_id": current_device.device_id, "path": "/telemetry", "status_code": 409},
         )
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
 
     INGESTED_RECORD_COUNT.inc()
     logger.info(
         "telemetry_ingested",
-        extra={"device_id": telemetry.device_id, "path": "/telemetry", "status_code": 201},
+        extra={"device_id": current_device.device_id, "path": "/telemetry", "status_code": 201},
     )
     return TelemetryResponse.model_validate(record)
 
