@@ -16,3 +16,13 @@ INGESTED_RECORD_COUNT = Counter(
     "telemetry_records_ingested_total",
     "Total number of ingested telemetry records",
 )
+
+AUTHENTICATION_FAILURES_TOTAL = Counter(
+    "authentication_failures_total",
+    "Total number of failed authentication attempts",
+)
+
+AUTHENTICATED_REQUESTS_TOTAL = Counter(
+    "authenticated_requests_total",
+    "Total number of successfully authenticated requests",
+)
