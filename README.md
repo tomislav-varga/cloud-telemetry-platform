@@ -5,9 +5,19 @@ Production-grade telemetry platform with:
 - Edge telemetry component for Raspberry Pi + DHT22
 - Telemetry ingestion API built with FastAPI + PostgreSQL
 
-## Architecture
+## Files and Folder Structure
 
 ```
+alembic/
+├── env.py
+└── versions/
+backend/
+├── api/
+├── models/
+├── repositories/
+├── schemas/
+├── security/
+└── main.py
 edge/
 ├── domain/
 │   ├── models.py
@@ -20,8 +30,10 @@ edge/
 │   ├── dht_reader.py
 │   ├── http_client.py
 │   └── logging_config.py
-└── config.py
-main.py
+├── config.py
+└── main.py
+tests/
+└── test_telemetry_api.py
 ```
 
 ## Features
