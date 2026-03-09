@@ -1,4 +1,4 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: telemetry-database
+  name: telemetry-database-dev
