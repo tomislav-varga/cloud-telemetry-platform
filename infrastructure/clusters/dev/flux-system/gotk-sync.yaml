@@ -8,7 +8,7 @@ metadata:
 spec:
   interval: 1m0s
   ref:
-    branch: feat/gitops-postgres-fluxcd
+    branch: feat/gitops-sealed-secrets
   secretRef:
     name: flux-system
   url: https://github.com/tomislav-varga/cloud-telemetry-platform.git
