@@ -1,0 +1,22 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dev-backend
+  namespace: flux-system
+spec:
+  interval: 5m0s
+  retryInterval: 1m0s
+  timeout: 10m0s
+  dependsOn:
+    - name: dev-migration
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infrastructure/clusters/dev/apps/backend
+  prune: true
+  wait: true
+  healthChecks:
+    - apiVersion: apps/v1
+      kind: Deployment
+      name: backend
+      namespace: telemetry-database-dev
