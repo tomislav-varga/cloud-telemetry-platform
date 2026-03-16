@@ -1,0 +1,23 @@
+apiVersion: kustomize.toolkit.fluxcd.io/v1
+kind: Kustomization
+metadata:
+  name: dev-migration
+  namespace: flux-system
+spec:
+  interval: 5m0s
+  retryInterval: 1m0s
+  timeout: 10m0s
+  dependsOn:
+    - name: dev-db
+  sourceRef:
+    kind: GitRepository
+    name: flux-system
+  path: ./infrastructure/clusters/dev/apps/migration
+  prune: true
+  force: true
+  wait: true
+  healthChecks:
+    - apiVersion: batch/v1
+      kind: Job
+      name: alembic-migrate
+      namespace: telemetry-database-dev

@@ -1,0 +1,78 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: telemetry-database-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      initContainers:
+        - name: wait-for-postgresql
+          image: postgres:16
+          imagePullPolicy: IfNotPresent
+          command:
+            - sh
+            - -c
+            - |
+              until pg_isready -h postgresql.telemetry-database-dev.svc.cluster.local -p 5432 -U telemetry_user -d telemetry; do
+                echo "waiting for postgresql..."
+                sleep 2
+              done
+      containers:
+        - name: backend
+          image: ghcr.io/tomislav-varga/cloud-telemetry-platform/backend:dev
+          imagePullPolicy: IfNotPresent
+          command:
+            - uvicorn
+            - backend.main:app
+            - --host
+            - 0.0.0.0
+            - --port
+            - "8000"
+          ports:
+            - name: http
+              containerPort: 8000
+          env:
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-auth
+                  key: postgres-password
+            - name: DATABASE_URL
+              value: postgresql+asyncpg://telemetry_user:$(POSTGRES_PASSWORD)@postgresql.telemetry-database-dev.svc.cluster.local:5432/telemetry
+            - name: LOG_LEVEL
+              value: INFO
+          startupProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
