@@ -26,7 +26,7 @@ spec:
               done
       containers:
         - name: alembic
-          image: tomsolo1984/cloud-telemetry-backend:1.0.0
+          image: tomsolo1984/open-telemetry-backend:1.0.0
           imagePullPolicy: IfNotPresent
           command:
             - sh
