@@ -27,7 +27,7 @@ spec:
               done
       containers:
         - name: backend
-          image: ghcr.io/tomislav-varga/cloud-telemetry-platform/backend:dev
+          image: tomsolo1984/cloud-telemetry-backend:1.0.0
           imagePullPolicy: IfNotPresent
           command:
             - uvicorn
