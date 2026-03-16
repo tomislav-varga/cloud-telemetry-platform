@@ -146,6 +146,50 @@ uvicorn backend.main:app --host 0.0.0.0 --port 8000 --reload
 
 API base URL: `http://localhost:8000`
 
+### Run backend in Docker
+
+Build image from repository root:
+
+```bash
+docker build -t cloud-telemetry-backend:dev .
+```
+
+If you also run PostgreSQL in Docker, use a shared network so the backend
+container can reach the database by container name:
+
+```bash
+docker network create telemetry-net
+
+docker run --name telemetry-db \
+  --network telemetry-net \
+  -e POSTGRES_USER=user \
+  -e POSTGRES_PASSWORD=pass \
+  -e POSTGRES_DB=telemetry \
+  -d postgres:16
+```
+
+Run API container:
+
+```bash
+docker run --rm \
+  --name telemetry-api \
+  --network telemetry-net \
+  -p 8000:8000 \
+  -e DATABASE_URL=postgresql+asyncpg://user:pass@telemetry-db:5432/telemetry \
+  -e LOG_LEVEL=INFO \
+  cloud-telemetry-backend:dev
+```
+
+Run migrations with the same image:
+
+```bash
+docker run --rm \
+  --network telemetry-net \
+  -e DATABASE_URL=postgresql+asyncpg://user:pass@telemetry-db:5432/telemetry \
+  cloud-telemetry-backend:dev \
+  alembic upgrade head
+```
+
 ### 6) Generate and register an API key for an edge device
 
 Use the backend utility to generate a key and store only prefix + hash in the `devices` table:
