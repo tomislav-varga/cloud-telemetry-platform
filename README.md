@@ -49,13 +49,19 @@ tests/
 
 Environment variables:
 
-- `API_URL` (default: `http://127.0.0.1:8000/telemetry`)
+- `API_URL` (default: `http://100.95.7.29:8000/telemetry`)
 - `API_KEY` (required for authenticated telemetry ingestion)
 - `DEVICE_ID` (default: `raspberrypi-edge-01`)
 - `READ_INTERVAL_SECONDS` (default: `30`)
 - `MAX_SENSOR_RETRIES` (default: `3`)
 - `MAX_HTTP_RETRIES` (default: `3`)
 - `HTTP_TIMEOUT` (default: `5.0`)
+
+For Tailscale-based connectivity to a backend exposed from Kubernetes, set:
+
+```env
+API_URL=http://backend-dev.<your-tailnet>.ts.net:8000/telemetry
+```
 
 ## Run edge service
 
