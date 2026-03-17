@@ -57,10 +57,10 @@ Environment variables:
 - `MAX_HTTP_RETRIES` (default: `3`)
 - `HTTP_TIMEOUT` (default: `5.0`)
 
-For Tailscale-based connectivity to a backend exposed from Kubernetes, set:
+For Tailscale-based connectivity to a backend exposed from Kubernetes over HTTPS, set:
 
 ```env
-API_URL=http://backend-dev.<your-tailnet>.ts.net:8000/telemetry
+API_URL=https://backend-dev.<your-tailnet>.ts.net/telemetry
 ```
 
 ## Run edge service

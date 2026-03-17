@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: backend-tailscale
+  namespace: telemetry-database-dev
+spec:
+  defaultBackend:
+    service:
+      name: backend
+      port:
+        number: 8000
+  ingressClassName: tailscale
+  tls:
+    - hosts:
+        - backend-dev
