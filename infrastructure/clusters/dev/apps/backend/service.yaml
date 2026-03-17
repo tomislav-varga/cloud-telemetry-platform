@@ -3,6 +3,9 @@ kind: Service
 metadata:
   name: backend
   namespace: telemetry-database-dev
+  annotations:
+    tailscale.com/expose: "true"
+    tailscale.com/hostname: backend-dev
 spec:
   selector:
     app: backend
