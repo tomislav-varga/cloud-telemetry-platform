@@ -1,13 +1,36 @@
-Unit]
+[Unit]
 Description=Edge DHT22 Sensor Service
-After=network.target
+After=network-online.target
+Wants=network-online.target
 
 [Service]
-User=pi
-WorkingDirectory=/home/pi/edge
-ExecStart=/home/pi/edge/venv/bin/python main.py
+Type=simple
+User=edge-dht22
+Group=edge-dht22
+SupplementaryGroups=gpio
+WorkingDirectory=/opt/cloud-telemetry-platform/edge
+EnvironmentFile=/etc/edge-dht22/env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/cloud-telemetry-platform/edge/.venv/bin/python main.py
 Restart=always
 RestartSec=5
+
+# Hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0077
 
 [Install]
 WantedBy=multi-user.target

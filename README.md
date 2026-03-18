@@ -74,14 +74,108 @@ python main.py
 
 ## systemd
 
-Example unit file is provided at `edge-dht22.service`.
+Use a dedicated least-privilege service account instead of `pi`.
 
-Install it:
+### 1) Create service user (no login shell) and grant GPIO access
 
 ```bash
-sudo cp edge-dht22.service /etc/systemd/system/edge-dht22.service
+NOLOGIN_BIN="$(command -v nologin)"
+sudo useradd \
+  --system \
+  --no-create-home \
+  --shell "$NOLOGIN_BIN" \
+  --user-group \
+  edge-dht22
+sudo usermod -aG gpio edge-dht22
+```
+
+### 2) Install edge app under `/opt`
+
+```bash
+sudo mkdir -p /opt/cloud-telemetry-platform
+sudo rsync -a --delete /path/to/cloud-telemetry-platform/edge/ /opt/cloud-telemetry-platform/edge/
+```
+
+### 3) Create runtime virtualenv and install dependencies
+
+```bash
+sudo python3 -m venv /opt/cloud-telemetry-platform/edge/.venv
+sudo /opt/cloud-telemetry-platform/edge/.venv/bin/pip install --upgrade pip
+sudo /opt/cloud-telemetry-platform/edge/.venv/bin/pip install -r /opt/cloud-telemetry-platform/edge/requirements.txt
+```
+
+### 4) Lock down application files (read/execute only)
+
+```bash
+sudo chown -R root:root /opt/cloud-telemetry-platform/edge
+sudo chmod -R a=rX /opt/cloud-telemetry-platform/edge
+```
+
+### 5) Create root-only env file (contains API key)
+
+```bash
+sudo install -d -m 0750 -o root -g root /etc/edge-dht22
+sudo tee /etc/edge-dht22/env >/dev/null <<'EOF'
+API_URL=https://backend-dev.<your-tailnet>.ts.net/telemetry
+API_KEY=dev_xxxxxx.your-generated-secret
+DEVICE_ID=raspberrypi-edge-01
+READ_INTERVAL_SECONDS=30
+MAX_SENSOR_RETRIES=3
+MAX_HTTP_RETRIES=3
+HTTP_TIMEOUT=5.0
+EOF
+sudo chmod 0600 /etc/edge-dht22/env
+```
+
+### 6) Create and validate `/etc/systemd/system/edge-dht22.service`
+
+```bash
+sudo tee /etc/systemd/system/edge-dht22.service >/dev/null <<'EOF'
+[Unit]
+Description=Edge DHT22 Sensor Service
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=edge-dht22
+Group=edge-dht22
+SupplementaryGroups=gpio
+WorkingDirectory=/opt/cloud-telemetry-platform/edge
+EnvironmentFile=/etc/edge-dht22/env
+Environment=PYTHONDONTWRITEBYTECODE=1
+ExecStart=/opt/cloud-telemetry-platform/edge/.venv/bin/python main.py
+Restart=always
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+LockPersonality=true
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+SystemCallArchitectures=native
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6
+CapabilityBoundingSet=
+AmbientCapabilities=
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
+EOF
+sudo systemd-analyze verify /etc/systemd/system/edge-dht22.service
+```
+
+### 7) Enable, start, and inspect logs
+
+```bash
 sudo systemctl daemon-reload
 sudo systemctl enable --now edge-dht22.service
+sudo systemctl status edge-dht22.service --no-pager
+journalctl -u edge-dht22.service -f
 ```
 
 ---
