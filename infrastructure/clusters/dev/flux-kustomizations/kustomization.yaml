@@ -3,4 +3,5 @@ kind: Kustomization
 resources:
   - dev-db.yaml
   - dev-migration.yaml
+  - dev-tailscale.yaml
   - dev-backend.yaml

@@ -9,6 +9,7 @@ spec:
   timeout: 10m0s
   dependsOn:
     - name: dev-migration
+    - name: dev-tailscale
   sourceRef:
     kind: GitRepository
     name: flux-system
