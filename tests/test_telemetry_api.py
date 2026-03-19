@@ -65,6 +65,15 @@ async def test_create_telemetry_missing_header(client):
     response = await client.post("/telemetry", json=payload)
     assert response.status_code == 401
     assert response.json()["detail"] == "Invalid API Key"
+    assert response.headers.get("X-Trace-Id")
+
+
+@pytest.mark.asyncio
+async def test_metrics_exposes_request_duration_histogram(client):
+    response = await client.get("/metrics")
+
+    assert response.status_code == 200
+    assert "telemetry_api_request_duration_seconds" in response.text
 
 
 @pytest.mark.asyncio
