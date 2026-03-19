@@ -60,6 +60,8 @@ Environment variables:
 - `MAX_SENSOR_RETRIES` (default: `3`)
 - `MAX_HTTP_RETRIES` (default: `3`)
 - `HTTP_TIMEOUT` (default: `5.0`)
+- `METRICS_BIND_ADDRESS` (default: `0.0.0.0`)
+- `METRICS_PORT` (default: `9102`)
 
 For Tailscale-based connectivity to a backend exposed from Kubernetes over HTTPS, set:
 
@@ -181,6 +183,24 @@ sudo systemctl enable --now edge-dht22.service
 sudo systemctl status edge-dht22.service --no-pager
 journalctl -u edge-dht22.service -f
 ```
+
+### Edge metrics endpoint
+
+After startup, the service exposes Prometheus metrics on:
+
+```text
+http://<edge-host>:9102/metrics
+```
+
+Quick check:
+
+```bash
+curl http://127.0.0.1:9102/metrics | head
+```
+
+In Kubernetes, add edge Tailscale hostnames to
+`prometheus.prometheusSpec.additionalScrapeConfigs[0].static_configs[0].targets`
+in `infrastructure/clusters/dev/infrastructure/monitoring/helmrelease.yaml`.
 
 ---
 
