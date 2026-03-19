@@ -45,6 +45,10 @@ tests/
 - Structured logging to stdout (systemd journal compatible).
 - Continuous runtime loop with recoverable error handling.
 
+## Observability
+
+- Observability contract and baseline alert thresholds: `docs/observability-contract.md`
+
 ## Edge configuration
 
 Environment variables:
