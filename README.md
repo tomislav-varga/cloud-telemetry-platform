@@ -81,6 +81,29 @@ kubeseal \
   > infrastructure/clusters/dev/infrastructure/monitoring/alertmanager-webhook-sealed-secret.yaml
 ```
 
+### Monitoring validation runbook
+
+```bash
+# Flux reconciliation status
+kubectl -n flux-system get kustomizations
+kubectl -n monitoring get helmreleases
+
+# Monitoring stack health
+kubectl -n monitoring get pods
+kubectl -n monitoring get prometheusrules
+kubectl -n monitoring get alertmanagerconfig
+
+# Scrape target checks (port-forward Prometheus UI)
+kubectl -n monitoring port-forward svc/kube-prometheus-stack-prometheus 9090:9090
+# Open http://127.0.0.1:9090/targets
+
+# Grafana access check (tailnet)
+kubectl -n monitoring get ingress
+
+# Backend metrics endpoint check
+kubectl -n telemetry-database-dev get svc backend
+```
+
 ## Edge configuration
 
 Environment variables:

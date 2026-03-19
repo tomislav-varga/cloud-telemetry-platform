@@ -77,6 +77,41 @@ async def test_metrics_exposes_request_duration_histogram(client):
 
 
 @pytest.mark.asyncio
+async def test_auth_failure_metric_reason_label(client):
+    payload = {
+        "device_id": "pi-lab-01",
+        "temperature": 22.4,
+        "humidity": 51.2,
+        "timestamp": "2026-02-14T12:00:00Z",
+    }
+
+    await client.post("/telemetry", json=payload)
+    metrics_response = await client.get("/metrics")
+
+    assert metrics_response.status_code == 200
+    assert 'authentication_failures_total{reason="missing_header"}' in metrics_response.text
+
+
+@pytest.mark.asyncio
+async def test_request_duration_histogram_has_status_labels(client):
+    payload = {
+        "device_id": "pi-lab-01",
+        "temperature": 22.4,
+        "humidity": 51.2,
+        "timestamp": "2026-02-14T12:00:00Z",
+    }
+
+    await client.post("/telemetry", json=payload)
+    metrics_response = await client.get("/metrics")
+
+    assert metrics_response.status_code == 200
+    assert (
+        'telemetry_api_request_duration_seconds_count{method="POST",path="/telemetry",status_code="401"}'
+        in metrics_response.text
+    )
+
+
+@pytest.mark.asyncio
 async def test_create_telemetry_malformed_key(client):
     payload = {
         "device_id": "pi-lab-01",
