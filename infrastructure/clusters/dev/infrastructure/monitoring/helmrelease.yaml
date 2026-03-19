@@ -41,6 +41,18 @@ spec:
                   storage: 20Gi
     grafana:
       enabled: true
+      admin:
+        existingSecret: grafana-admin-auth
+        userKey: admin-user
+        passwordKey: admin-password
+      ingress:
+        enabled: true
+        ingressClassName: tailscale
+        hosts:
+          - grafana-dev
+        tls:
+          - hosts:
+              - grafana-dev
       persistence:
         enabled: true
         storageClassName: local-path

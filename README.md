@@ -49,6 +49,38 @@ tests/
 
 - Observability contract and baseline alert thresholds: `docs/observability-contract.md`
 
+### Monitoring secret bootstrap
+
+Before reconciling monitoring manifests, replace placeholder encrypted values in:
+
+- `infrastructure/clusters/dev/infrastructure/monitoring/grafana-admin-sealed-secret.yaml`
+- `infrastructure/clusters/dev/infrastructure/monitoring/alertmanager-webhook-sealed-secret.yaml`
+
+Generate sealed values with your cluster public key, for example:
+
+```bash
+kubectl -n monitoring create secret generic grafana-admin-auth \
+  --from-literal=admin-user=admin \
+  --from-literal=admin-password='<strong-password>' \
+  --dry-run=client -o yaml > /tmp/grafana-admin-auth.yaml
+
+kubeseal \
+  --namespace monitoring \
+  --format yaml \
+  < /tmp/grafana-admin-auth.yaml \
+  > infrastructure/clusters/dev/infrastructure/monitoring/grafana-admin-sealed-secret.yaml
+
+kubectl -n monitoring create secret generic alertmanager-webhook \
+  --from-literal=url='https://hooks.slack.com/services/REPLACE_ME' \
+  --dry-run=client -o yaml > /tmp/alertmanager-webhook.yaml
+
+kubeseal \
+  --namespace monitoring \
+  --format yaml \
+  < /tmp/alertmanager-webhook.yaml \
+  > infrastructure/clusters/dev/infrastructure/monitoring/alertmanager-webhook-sealed-secret.yaml
+```
+
 ## Edge configuration
 
 Environment variables:

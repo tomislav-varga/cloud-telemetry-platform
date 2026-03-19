@@ -1,0 +1,53 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: telemetry-observability
+  namespace: monitoring
+spec:
+  groups:
+    - name: telemetry-platform
+      rules:
+        - alert: BackendDown
+          expr: up{job="backend"} == 0
+          for: 2m
+          labels:
+            severity: critical
+          annotations:
+            summary: Backend target is down
+            description: Prometheus cannot scrape backend metrics for more than 2 minutes.
+
+        - alert: BackendHighErrorRate
+          expr: sum(rate(telemetry_api_errors_total[5m])) / sum(rate(telemetry_api_requests_total[5m])) > 0.05
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Backend error rate is above 5 percent
+            description: HTTP error responses are elevated for 10 minutes.
+
+        - alert: BackendHighP95Latency
+          expr: histogram_quantile(0.95, sum by (le) (rate(telemetry_api_request_duration_seconds_bucket[5m]))) > 1.0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Backend p95 latency above 1 second
+            description: API response latency is degraded for 10 minutes.
+
+        - alert: ScrapeTargetDown
+          expr: up == 0
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: Prometheus scrape target down
+            description: One or more scrape targets are down for 10 minutes.
+
+        - alert: EdgeNoRecentTransmission
+          expr: time() - edge_last_success_unixtime > 600
+          for: 10m
+          labels:
+            severity: critical
+          annotations:
+            summary: Edge has not transmitted telemetry recently
+            description: No successful edge transmission observed for over 10 minutes.

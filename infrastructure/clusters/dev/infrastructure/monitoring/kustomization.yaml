@@ -5,3 +5,7 @@ resources:
   - helmrepository.yaml
   - helmrelease.yaml
   - scrape-targets.yaml
+  - prometheusrules.yaml
+  - alertmanagerconfig.yaml
+  - grafana-admin-sealed-secret.yaml
+  - alertmanager-webhook-sealed-secret.yaml
