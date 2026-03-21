@@ -2,7 +2,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
   name: telemetry-observability
-  namespace: monitoring
+  namespace: telemetry-monitoring-dev
 spec:
   groups:
     - name: telemetry-platform

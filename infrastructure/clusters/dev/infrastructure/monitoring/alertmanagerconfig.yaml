@@ -2,7 +2,7 @@ apiVersion: monitoring.coreos.com/v1beta1
 kind: AlertmanagerConfig
 metadata:
   name: telemetry-alert-routing
-  namespace: monitoring
+  namespace: telemetry-monitoring-dev
 spec:
   route:
     receiver: null-receiver

@@ -2,7 +2,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: backend
-  namespace: monitoring
+  namespace: telemetry-monitoring-dev
 spec:
   namespaceSelector:
     matchNames:
@@ -19,7 +19,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
 metadata:
   name: flux-controllers
-  namespace: monitoring
+  namespace: telemetry-monitoring-dev
 spec:
   namespaceSelector:
     matchNames:
@@ -36,7 +36,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: postgresql-exporter
-  namespace: monitoring
+  namespace: telemetry-monitoring-dev
 spec:
   namespaceSelector:
     matchNames:
