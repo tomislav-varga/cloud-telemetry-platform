@@ -5,7 +5,7 @@ metadata:
   namespace: monitoring
 spec:
   route:
-    receiver: team-webhook
+    receiver: null-receiver
     groupBy:
       - alertname
       - severity
@@ -13,9 +13,4 @@ spec:
     groupInterval: 5m
     repeatInterval: 4h
   receivers:
-    - name: team-webhook
-      webhookConfigs:
-        - sendResolved: true
-          urlSecret:
-            name: alertmanager-webhook
-            key: url
+    - name: null-receiver
