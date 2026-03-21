@@ -9,3 +9,4 @@ resources:
   - alertmanagerconfig.yaml
   - grafana-admin-sealed-secret.yaml
   - alertmanager-webhook-sealed-secret.yaml
+  - prometheus-additional-scrape-sealed-secret.yaml

@@ -24,12 +24,9 @@ spec:
         retention: 15d
         serviceMonitorSelectorNilUsesHelmValues: false
         podMonitorSelectorNilUsesHelmValues: false
-        additionalScrapeConfigs:
-          - job_name: edge-tailscale
-            metrics_path: /metrics
-            scrape_interval: 30s
-            static_configs:
-              - targets: []
+        additionalScrapeConfigsSecret:
+          name: prometheus-additional-scrape
+          key: additional-scrape-configs.yaml
         storageSpec:
           volumeClaimTemplate:
             spec:
