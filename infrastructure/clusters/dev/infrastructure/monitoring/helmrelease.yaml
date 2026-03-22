@@ -24,9 +24,6 @@ spec:
         retention: 15d
         serviceMonitorSelectorNilUsesHelmValues: false
         podMonitorSelectorNilUsesHelmValues: false
-        additionalScrapeConfigsSecret:
-          name: prometheus-additional-scrape
-          key: additional-scrape-configs.yaml
         storageSpec:
           volumeClaimTemplate:
             spec:

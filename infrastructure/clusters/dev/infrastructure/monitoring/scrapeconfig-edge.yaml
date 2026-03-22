@@ -1,0 +1,16 @@
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: edge-dev
+  namespace: telemetry-monitoring-dev
+  labels:
+    release: kube-prometheus-stack
+spec:
+  metricsPath: /metrics
+  scrapeInterval: 30s
+  staticConfigs:
+    - targets:
+        - 100.89.185.26:9102
+      labels:
+        environment: dev
+        source: edge

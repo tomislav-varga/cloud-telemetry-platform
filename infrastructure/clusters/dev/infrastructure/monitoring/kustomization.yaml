@@ -5,7 +5,7 @@ resources:
   - helmrepository.yaml
   - helmrelease.yaml
   - scrape-targets.yaml
+  - scrapeconfig-edge.yaml
   - prometheusrules.yaml
   - alertmanagerconfig.yaml
   - grafana-admin-sealed-secret.yaml
-  - prometheus-additional-scrape-sealed-secret.yaml
