@@ -5,3 +5,4 @@ resources:
   - dev-migration.yaml
   - dev-tailscale.yaml
   - dev-backend.yaml
+  - dev-monitoring.yaml

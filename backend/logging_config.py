@@ -2,6 +2,8 @@ import json
 import logging
 from datetime import datetime, timezone
 
+from backend.request_context import get_trace_id
+
 
 class JsonFormatter(logging.Formatter):
     def format(self, record: logging.LogRecord) -> str:
@@ -11,6 +13,10 @@ class JsonFormatter(logging.Formatter):
             "logger": record.name,
             "message": record.getMessage(),
         }
+
+        trace_id = get_trace_id()
+        if trace_id is not None:
+            payload["trace_id"] = trace_id
 
         if hasattr(record, "device_id"):
             payload["device_id"] = record.device_id

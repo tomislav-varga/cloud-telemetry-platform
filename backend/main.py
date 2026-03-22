@@ -1,4 +1,6 @@
 import logging
+from time import perf_counter
+from uuid import uuid4
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -10,9 +12,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from backend.api.telemetry import router as telemetry_router
 from backend.config import get_settings
 from backend.db import check_db_health, get_db
-from backend.metrics import ERROR_COUNT, REQUEST_COUNT
+from backend.metrics import ERROR_COUNT, REQUEST_COUNT, REQUEST_DURATION_SECONDS
 from backend.repositories.telemetry import TelemetryRepository
 from backend.logging_config import configure_logging
+from backend.request_context import reset_trace_id, set_trace_id
 
 settings = get_settings()
 configure_logging(settings.log_level)
@@ -30,16 +33,35 @@ repo = TelemetryRepository()
 
 @app.middleware("http")
 async def track_metrics(request: Request, call_next):
+    trace_id = str(uuid4())
+    token = set_trace_id(trace_id)
+    response: Response | None = None
+
     method = request.method
     path = request.url.path
     REQUEST_COUNT.labels(method=method, path=path).inc()
+    started = perf_counter()
 
-    response = await call_next(request)
+    try:
+        response = await call_next(request)
+        response.headers["X-Trace-Id"] = trace_id
+        if response.status_code >= 400:
+            ERROR_COUNT.labels(method=method, path=path, status_code=str(response.status_code)).inc()
+        return response
+    finally:
+        elapsed = perf_counter() - started
+        if response is not None:
+            status_code = str(response.status_code)
+        else:
+            status_code = "500"
+            ERROR_COUNT.labels(method=method, path=path, status_code=status_code).inc()
 
-    if response.status_code >= 400:
-        ERROR_COUNT.labels(method=method, path=path, status_code=str(response.status_code)).inc()
-
-    return response
+        REQUEST_DURATION_SECONDS.labels(
+            method=method,
+            path=path,
+            status_code=status_code,
+        ).observe(elapsed)
+        reset_trace_id(token)
 
 
 @app.get("/health")

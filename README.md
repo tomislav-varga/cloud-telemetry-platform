@@ -45,6 +45,65 @@ tests/
 - Structured logging to stdout (systemd journal compatible).
 - Continuous runtime loop with recoverable error handling.
 
+## Observability
+
+- Observability contract and baseline alert thresholds: `docs/observability-contract.md`
+
+### Monitoring secret bootstrap
+
+Before reconciling monitoring manifests, replace placeholder encrypted values in:
+
+- `infrastructure/clusters/dev/infrastructure/monitoring/grafana-admin-sealed-secret.yaml`
+- `infrastructure/clusters/dev/infrastructure/monitoring/alertmanager-webhook-sealed-secret.yaml`
+
+Generate sealed values with your cluster public key, for example:
+
+```bash
+kubectl -n monitoring create secret generic grafana-admin-auth \
+  --from-literal=admin-user=admin \
+  --from-literal=admin-password='<strong-password>' \
+  --dry-run=client -o yaml > /tmp/grafana-admin-auth.yaml
+
+kubeseal \
+  --namespace monitoring \
+  --format yaml \
+  < /tmp/grafana-admin-auth.yaml \
+  > infrastructure/clusters/dev/infrastructure/monitoring/grafana-admin-sealed-secret.yaml
+
+kubectl -n monitoring create secret generic alertmanager-webhook \
+  --from-literal=url='https://hooks.slack.com/services/REPLACE_ME' \
+  --dry-run=client -o yaml > /tmp/alertmanager-webhook.yaml
+
+kubeseal \
+  --namespace monitoring \
+  --format yaml \
+  < /tmp/alertmanager-webhook.yaml \
+  > infrastructure/clusters/dev/infrastructure/monitoring/alertmanager-webhook-sealed-secret.yaml
+```
+
+### Monitoring validation runbook
+
+```bash
+# Flux reconciliation status
+kubectl -n flux-system get kustomizations
+kubectl -n telemetry-monitoring-dev get helmreleases
+
+# Monitoring stack health
+kubectl -n telemetry-monitoring-dev get pods
+kubectl -n telemetry-monitoring-dev get prometheusrules
+kubectl -n telemetry-monitoring-dev get alertmanagerconfig
+
+# Scrape target checks (port-forward Prometheus UI)
+kubectl -n telemetry-monitoring-dev port-forward svc/kube-prometheus-stack-prometheus 9090:9090
+# Open http://127.0.0.1:9090/targets
+
+# Grafana access check (tailnet)
+kubectl -n telemetry-monitoring-dev get ingress
+
+# Backend metrics endpoint check
+kubectl -n telemetry-database-dev get svc backend
+```
+
 ## Edge configuration
 
 Environment variables:
@@ -56,6 +115,8 @@ Environment variables:
 - `MAX_SENSOR_RETRIES` (default: `3`)
 - `MAX_HTTP_RETRIES` (default: `3`)
 - `HTTP_TIMEOUT` (default: `5.0`)
+- `METRICS_BIND_ADDRESS` (default: `0.0.0.0`)
+- `METRICS_PORT` (default: `9102`)
 
 For Tailscale-based connectivity to a backend exposed from Kubernetes over HTTPS, set:
 
@@ -177,6 +238,23 @@ sudo systemctl enable --now edge-dht22.service
 sudo systemctl status edge-dht22.service --no-pager
 journalctl -u edge-dht22.service -f
 ```
+
+### Edge metrics endpoint
+
+After startup, the service exposes Prometheus metrics on:
+
+```text
+http://<edge-host>:9102/metrics
+```
+
+Quick check:
+
+```bash
+curl http://127.0.0.1:9102/metrics | head
+```
+
+In Kubernetes, set edge scrape targets in
+`infrastructure/clusters/dev/infrastructure/monitoring/scrapeconfig-edge.yaml`.
 
 ---
 

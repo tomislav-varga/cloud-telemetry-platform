@@ -8,7 +8,7 @@ metadata:
 spec:
   interval: 1m0s
   ref:
-    branch: feat/tailscale-edge-backend-link
+    branch: feat/observability-prometheus-grafana-dev
   secretRef:
     name: flux-system
   url: https://github.com/tomislav-varga/cloud-telemetry-platform.git

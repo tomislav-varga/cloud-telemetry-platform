@@ -17,7 +17,7 @@ api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
 
 
 def _auth_failed(status_code: int, key_prefix: str | None, reason: str) -> None:
-    AUTHENTICATION_FAILURES_TOTAL.inc()
+    AUTHENTICATION_FAILURES_TOTAL.labels(reason=reason).inc()
     logger.warning(
         "device_authentication_failed",
         extra={"key_prefix": key_prefix, "status_code": status_code, "reason": reason},

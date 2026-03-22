@@ -49,6 +49,8 @@ class AppConfig:
     MAX_SENSOR_RETRIES: int
     MAX_HTTP_RETRIES: int
     HTTP_TIMEOUT: float
+    METRICS_BIND_ADDRESS: str
+    METRICS_PORT: int
 
     @classmethod
     def from_env(cls) -> "AppConfig":
@@ -62,6 +64,8 @@ class AppConfig:
             MAX_SENSOR_RETRIES=int(os.getenv("MAX_SENSOR_RETRIES", "3")),
             MAX_HTTP_RETRIES=int(os.getenv("MAX_HTTP_RETRIES", "3")),
             HTTP_TIMEOUT=float(os.getenv("HTTP_TIMEOUT", "5.0")),
+            METRICS_BIND_ADDRESS=os.getenv("METRICS_BIND_ADDRESS", "0.0.0.0"),
+            METRICS_PORT=int(os.getenv("METRICS_PORT", "9102")),
         )
         config._validate()
         return config
@@ -75,6 +79,8 @@ class AppConfig:
             raise ValueError("MAX_HTTP_RETRIES must be > 0")
         if self.HTTP_TIMEOUT <= 0:
             raise ValueError("HTTP_TIMEOUT must be > 0")
+        if self.METRICS_PORT <= 0 or self.METRICS_PORT > 65535:
+            raise ValueError("METRICS_PORT must be between 1 and 65535")
         if not self.API_URL:
             raise ValueError("API_URL is required")
         if not self.API_KEY:
