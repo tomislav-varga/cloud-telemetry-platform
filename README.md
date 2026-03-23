@@ -39,3 +39,7 @@ I wanted to work on a project that solves a real problem. An area of a wall in m
       | Grafana     |<----------------------------+ Prometheus Rules     |
       | dashboards  |                             | and Alertmanager cfg |
       +-------------+                             +---------------------+
+
+## Video Demo
+
+[![Cloud Telemetry Platform Demo](https://img.youtube.com/vi/ghD60_KQD9M/0.jpg)](https://www.youtube.com/watch?v=ghD60_KQD9M)
