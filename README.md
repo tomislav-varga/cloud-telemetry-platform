@@ -20,7 +20,7 @@ I wanted to work on a project that solves a real problem. An area of a wall in m
 6. Full observability baseline with dashboards and alerts (PR #7, PR #9): Prometheus and Grafana provide RED metrics, edge health visibility, and alert-rule foundations for fast troubleshooting.
 
 ## System Architecture (ASCII)
-
+```markdown
 +-----------------------+              +-------------------------------+
 | Edge Device           | HTTPS + Key | Kubernetes Cluster (GitOps)   |
 | Raspberry Pi + DHT22  +-------------> Backend API (FastAPI)         |
@@ -39,7 +39,7 @@ I wanted to work on a project that solves a real problem. An area of a wall in m
       | Grafana     |<----------------------------+ Prometheus Rules     |
       | dashboards  |                             | and Alertmanager cfg |
       +-------------+                             +---------------------+
-
+```
 ## Video Demo
 
 [![Cloud Telemetry Platform Demo](https://img.youtube.com/vi/ghD60_KQD9M/0.jpg)](https://www.youtube.com/watch?v=ghD60_KQD9M)
