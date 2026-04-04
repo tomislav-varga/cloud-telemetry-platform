@@ -14,3 +14,23 @@ spec:
       labels:
         environment: dev
         source: edge
+---
+apiVersion: monitoring.coreos.com/v1alpha1
+kind: ScrapeConfig
+metadata:
+  name: homeserver
+  namespace: telemetry-monitoring-dev
+  labels:
+    release: kube-prometheus-stack
+spec:
+  metricsPath: /metrics
+  scrapeInterval: 30s
+  staticConfigs:
+    - targets:
+        - 100.95.7.29:9100
+      labels:
+        environment: dev
+        source: linux
+  relabelings:
+    - targetLabel: job
+      replacement: node-exporter
