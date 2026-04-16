@@ -19,11 +19,11 @@ I wanted to work on a project that solves a real problem. An area of a wall in m
 5. Secure platform connectivity and secret handling (PR #6, PR #8): edge-to-backend traffic uses private Tailscale HTTPS ingress while cluster credentials are stored as SealedSecrets.
 6. Full observability baseline with dashboards and alerts (PR #7, PR #9): Prometheus and Grafana provide RED metrics, edge health visibility, and alert-rule foundations for fast troubleshooting.
 
-## System Architecture (ASCII)
+## System Architecture
 ```markdown
 +-----------------------+              +-------------------------------+
-| Edge Device           | HTTPS + Key | Kubernetes Cluster (GitOps)   |
-| Raspberry Pi + DHT22  +-------------> Backend API (FastAPI)         |
+| Edge Device           | HTTPS + Key  |                               |
+| Raspberry Pi + DHT22  +-------------> Backend API (FastAPI)          |
 | edge service + retries|              | telemetry endpoints + metrics |
 +-----------+-----------+              +---------------+---------------+
             |                                              |
