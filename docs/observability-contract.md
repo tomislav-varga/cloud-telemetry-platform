@@ -97,6 +97,16 @@ These alerts are intentionally conservative for dev and can be tightened later.
 - For: `10m`
 - Severity: `critical`
 
+6. Edge temperature too low
+- Expr: `edge_temperature_celsius{environment="dev",source="edge"} < 21`
+- For: `2m`
+- Severity: `warning`
+
+7. Edge temperature too high
+- Expr: `edge_temperature_celsius{environment="dev",source="edge"} > 23`
+- For: `2m`
+- Severity: `warning`
+
 ## Dashboard Minimums
 
 1. API RED panel group
