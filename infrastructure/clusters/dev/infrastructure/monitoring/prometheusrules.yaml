@@ -51,3 +51,21 @@ spec:
           annotations:
             summary: Edge has not transmitted telemetry recently
             description: No successful edge transmission observed for over 10 minutes.
+
+        - alert: EdgeTemperatureTooLow
+          expr: edge_temperature_celsius{environment="dev",source="edge"} < 21
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: Edge temperature too low (device {{ $labels.device_id }})
+            description: Temperature {{ $value }}°C is below 21°C for >2 minutes (device {{ $labels.device_id }}).
+
+        - alert: EdgeTemperatureTooHigh
+          expr: edge_temperature_celsius{environment="dev",source="edge"} > 23
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: Edge temperature too high (device {{ $labels.device_id }})
+            description: Temperature {{ $value }}°C is above 23°C for >2 minutes (device {{ $labels.device_id }}).
