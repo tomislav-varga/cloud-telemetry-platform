@@ -8,5 +8,5 @@ resources:
   - scrapeconfig-edge.yaml
   - prometheusrules.yaml
   - alertmanagerconfig.yaml
-  - sealed-alertmanager-mailjet-config.yaml
+  - sealed-alertmanager-gmail-config.yaml
   - grafana-admin-sealed-secret.yaml
