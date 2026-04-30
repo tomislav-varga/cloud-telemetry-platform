@@ -24,6 +24,7 @@ spec:
         retention: 15d
         serviceMonitorSelectorNilUsesHelmValues: false
         podMonitorSelectorNilUsesHelmValues: false
+        ruleSelectorNilUsesHelmValues: false
         storageSpec:
           volumeClaimTemplate:
             spec:
@@ -33,6 +34,9 @@ spec:
               resources:
                 requests:
                   storage: 20Gi
+    alertmanager:
+      alertmanagerSpec:
+        configSecret: alertmanager-config
     grafana:
       enabled: true
       admin:

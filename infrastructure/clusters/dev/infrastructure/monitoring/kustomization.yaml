@@ -4,8 +4,10 @@ resources:
   - namespace.yaml
   - helmrepository.yaml
   - helmrelease.yaml
+  - alertmanager-ingress.yaml
   - scrape-targets.yaml
   - scrapeconfig-edge.yaml
   - prometheusrules.yaml
   - alertmanagerconfig.yaml
+  - sealed-alertmanager-gmail-config.yaml
   - grafana-admin-sealed-secret.yaml
