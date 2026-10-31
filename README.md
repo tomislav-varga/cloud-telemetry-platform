@@ -6,6 +6,8 @@ Cloud Telemetry Platform is an end-to-end room climate monitoring project.
 An edge service on Raspberry Pi reads a DHT22 sensor, sends authenticated telemetry to a FastAPI backend, stores data in PostgreSQL, and exposes metrics for Prometheus and Grafana.
 The platform is deployed in Kubernetes with a GitOps workflow and secure private networking.
 
+The Prometheus/Grafana/Alertmanager stack, scrape targets, alert rules and dashboards live in the separate [monitoring-alerting](https://github.com/tomislav-varga/monitoring-alerting) repo.
+
 ## Motivation
 
 I wanted to work on a project that solves a real problem. An area of a wall in my bedroom showed signs of mold, and I had to call a painter. He told me this usually happens when the temperature stays below 21 degrees Celsius for long periods. That sparked this project idea: monitor room temperature and humidity, and trigger alerts if the temperature drops below 21 degrees Celsius. I decided to build an end-to-end monitoring solution using a DHT22 sensor on my Raspberry Pi, with the backend and monitoring stack running in my Kubernetes cluster, plus visualization and alerting through Grafana and Prometheus.
