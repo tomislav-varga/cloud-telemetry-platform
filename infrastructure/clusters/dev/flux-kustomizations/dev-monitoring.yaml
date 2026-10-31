@@ -4,6 +4,9 @@ metadata:
   name: dev-monitoring
   namespace: flux-system
 spec:
+  # Handed over to the monitoring-alerting repo; suspended and non-pruning
+  # so removing this Kustomization later does not delete the stack.
+  suspend: true
   interval: 5m0s
   retryInterval: 1m0s
   timeout: 15m0s
@@ -11,5 +14,5 @@ spec:
     kind: GitRepository
     name: flux-system
   path: ./infrastructure/clusters/dev/infrastructure/monitoring
-  prune: true
+  prune: false
   wait: true
